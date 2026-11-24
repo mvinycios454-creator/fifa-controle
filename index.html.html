@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Placar da Semana · Controle de FIFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f1;--surface:#fff;--ink:#14231c;--muted:#5d6b63;--line:#dfe5dc;--turf:#1f7a4d;--turf-soft:#e2f1e8;--gold:#b7791f;--gold-soft:#fbf0d9;--loss:#b4372d;--loss-soft:#fbe6e3;--draw:#6b7280;--draw-soft:#eceef0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a14;--surface:#16261d;--ink:#e8f0ea;--muted:#9bb0a3;--line:#274034;--turf:#4cc58a;--turf-soft:#173b29;--gold:#f0b84a;--gold-soft:#3a2e12;--loss:#ef7b70;--loss-soft:#3d1c19;--draw:#a3acb5;--draw-soft:#262f2b}}
+:root[data-theme="dark"]{--bg:#0e1a14;--surface:#16261d;--ink:#e8f0ea;--muted:#9bb0a3;--line:#274034;--turf:#4cc58a;--turf-soft:#173b29;--gold:#f0b84a;--gold-soft:#3a2e12;--loss:#ef7b70;--loss-soft:#3d1c19;--draw:#a3acb5;--draw-soft:#262f2b}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif}
+h1,h2,h3,.num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;letter-spacing:.01em;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{font-size:2.2rem;line-height:1}
+.sub{color:var(--muted);font-size:.95rem}
+nav{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+nav button{border:0;background:none;color:var(--muted);font:600 .95rem Barlow,sans-serif;padding:8px 16px;border-radius:7px;cursor:pointer}
+nav button.on{background:var(--turf);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.banner{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{font-size:1.45rem;margin-bottom:12px}
+label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+input,select{width:100%;font:500 1rem Barlow,sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.f{margin-bottom:12px}
+.score{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.score span{padding-bottom:10px;font-weight:700;color:var(--muted)}
+.score input{text-align:center;font-size:1.4rem;font-family:"Barlow Condensed",sans-serif;font-weight:700}
+.checks{display:grid;gap:6px;margin-bottom:14px}
+.checks label{display:flex;gap:8px;align-items:center;color:var(--ink);font-size:.95rem;font-weight:500;margin:0;cursor:pointer}
+.checks input{width:auto}
+.btn{border:0;border-radius:9px;padding:11px 16px;font:600 1rem Barlow,sans-serif;cursor:pointer;background:var(--turf);color:#fff}
+.btn.alt{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.gold{background:var(--gold);color:#fff}
+.btn.full{width:100%}
+.err{color:var(--loss);font-weight:600;min-height:1.3em;margin:8px 0 0;font-size:.92rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat .num{font-size:2.1rem;line-height:1.05}
+.stat small{color:var(--muted);font-weight:500}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:8px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.8rem;color:var(--muted);font-weight:600}
+th:first-child,td:first-child{text-align:left}
+tr.lead td:first-child{font-weight:700;color:var(--turf)}
+.bar{height:6px;border-radius:3px;background:var(--line);min-width:60px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--turf)}
+.days{display:flex;gap:8px;margin-top:14px}
+.day{flex:1;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 2px;font-size:.85rem;color:var(--muted)}
+.day b{display:block;font:700 1.3rem "Barlow Condensed",sans-serif;color:var(--ink)}
+.day.today{border-color:var(--turf)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.match{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.badge{font:700 .8rem Barlow,sans-serif;padding:3px 9px;border-radius:99px}
+.badge.V{background:var(--turf-soft);color:var(--turf)}
+.badge.D{background:var(--loss-soft);color:var(--loss)}
+.badge.E{background:var(--draw-soft);color:var(--draw)}
+.m-score{font:700 1.5rem "Barlow Condensed",sans-serif}
+.tag{display:inline-block;font-size:.75rem;background:var(--gold-soft);color:var(--gold);border-radius:6px;padding:1px 7px;margin:2px 4px 0 0;font-weight:600}
+.m-info small{color:var(--muted)}
+.x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px}
+.x:hover{color:var(--loss)}
+.empty{color:var(--muted);padding:20px 0;text-align:center}
+.champ{background:var(--gold-soft);border:1px solid var(--gold);border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
+.champ .tr{font-size:2.4rem;line-height:1}
+.champ h3{font-size:2.6rem;color:var(--gold);line-height:1.1}
+.champ p{margin:4px 0 0;color:var(--ink)}
+.best{display:grid;gap:8px;margin:8px 0 16px}
+.best div{display:flex;justify-content:space-between;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.best b{font-family:"Barlow Condensed",sans-serif;font-size:1.3rem}
+.week{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+.week summary{cursor:pointer;padding:14px 18px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:600}
+.week .in{padding:0 18px 18px}
+.pill{font-size:.78rem;border-radius:99px;padding:2px 10px;background:var(--turf-soft);color:var(--turf);font-weight:700}
+.pill.open{background:var(--gold-soft);color:var(--gold)}
+h3.s{font-size:1.2rem;margin:14px 0 4px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.dlg{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;max-width:380px;width:100%}
+.dlg p{margin:0 0 16px}
+.dlg .bt{display:flex;gap:8px;justify-content:flex-end}
+.btn.red{background:var(--loss);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Placar da Semana</h1>
+      <div class="sub" id="range"></div>
+    </div>
+    <nav aria-label="Seções"><button id="t-dash" class="on" onclick="tab('dash')">Painel</button><button id="t-hist" onclick="tab('hist')">Histórico</button></nav>
+  </header>
+
+  <section id="dash">
+    <div id="banner"></div>
+    <div class="grid">
+      <form class="card" id="form" autocomplete="off">
+        <h2>Registrar partida</h2>
+        <div class="row">
+          <div><label for="p1">Jogador 1</label><input id="p1" list="names" required maxlength="24" placeholder="Ex.: Rafa"></div>
+          <div><label for="p2">Jogador 2</label><input id="p2" list="names" required maxlength="24" placeholder="Ex.: Gui"></div>
+        </div>
+        <datalist id="names"></datalist>
+        <div class="f">
+          <label>Placar (gols do Jogador 1 × gols do Jogador 2)</label>
+          <div class="score"><input id="g1" type="number" min="0" max="99" value="0" aria-label="Gols do jogador 1"><span>×</span><input id="g2" type="number" min="0" max="99" value="0" aria-label="Gols do jogador 2"></div>
+        </div>
+        <div class="f">
+          <label for="res">Resultado do Jogador 1</label>
+          <select id="res"><option value="V">Vitória</option><option value="E">Empate</option><option value="D">Derrota</option></select>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="pens"> Foi para os pênaltis</label>
+          <label><input type="checkbox" id="et"> Teve prorrogação</label>
+          <label><input type="checkbox" id="gold"> Teve gol de ouro</label>
+        </div>
+        <div class="f"><label for="date">Data da partida (segunda a sexta)</label><input id="date" type="date" required></div>
+        <button class="btn full" type="submit">Salvar partida</button>
+        <p class="err" id="err" role="alert"></p>
+      </form>
+
+      <div>
+        <div class="stats" id="stats"></div>
+        <div class="card">
+          <h2>Classificação da semana</h2>
+          <div class="tbl" id="table"></div>
+          <div class="days" id="days"></div>
+          <div class="actions">
+            <button class="btn alt" onclick="showReport(curKey)">Ver relatório parcial</button>
+            <button class="btn gold" id="closeBtn" onclick="closeWeek()">Encerrar semana</button>
+          </div>
+          <h2 style="font-size:1.2rem;margin-top:6px">Partidas da semana</h2>
+          <div id="list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="report" style="margin-top:16px;display:none"></div>
+  </section>
+
+  <section id="hist" hidden>
+    <div id="histList"></div>
+  </section>
+</div>
+
+<script>
+var KEY='fifa-controle-v1', DAYS=['Seg','Ter','Qua','Qui','Sex'];
+var S={matches:[],closed:{}};
+try{var raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw)}catch(e){}
+S.matches=S.matches||[];S.closed=S.closed||{};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function iso(d){var m=d.getMonth()+1,x=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(x<10?'0':'')+x}
+function parse(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function dow(s){return parse(s).getDay()}
+function isWeekday(s){var d=dow(s);return d>=1&&d<=5}
+function mondayOf(s){var d=parse(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return iso(d)}
+function addDays(s,n){var d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
+function br(s){var p=s.split('-');return p[2]+'/'+p[1]}
+function brFull(s){return br(s)+'/'+s.slice(0,4)}
+var today=iso(new Date()), curKey=mondayOf(today);
+var defDate=isWeekday(today)?today:addDays(curKey,4);
+
+/* ---------- Estatísticas ---------- */
+function weekMatches(k){return S.matches.filter(function(m){return mondayOf(m.date)===k})}
+function compute(ms){
+  var P={};
+  function get(n){var k=n.toLowerCase();return P[k]||(P[k]={name:n,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0})}
+  ms.forEach(function(m){
+    var a=get(m.p1),b=get(m.p2);
+    a.j++;b.j++;a.gp+=m.g1;a.gc+=m.g2;b.gp+=m.g2;b.gc+=m.g1;
+    if(m.res==='V'){a.v++;b.d++;a.pts+=3}
+    else if(m.res==='D'){b.v++;a.d++;b.pts+=3}
+    else{a.e++;b.e++;a.pts++;b.pts++}
+  });
+  var arr=Object.keys(P).map(function(k){var p=P[k];p.sg=p.gp-p.gc;p.ap=p.j?Math.round(p.pts/(p.j*3)*100):0;return p});
+  arr.sort(function(x,y){return y.pts-x.pts||y.ap-x.ap||y.sg-x.sg||y.gp-x.gp||x.name.localeCompare(y.name)});
+  return arr;
+}
+function wins(ms){ // vitórias normalizadas: vencedor, perdedor, placar do vencedor
+  return ms.filter(function(m){return m.res!=='E'}).map(function(m){
+    var w=m.res==='V';
+    return{w:w?m.p1:m.p2,l:w?m.p2:m.p1,gw:w?m.g1:m.g2,gl:w?m.g2:m.g1,m:m};
+  });
+}
+function bestGames(ms){
+  return wins(ms).sort(function(a,b){return (b.gw-b.gl)-(a.gw-a.gl)||b.gw-a.gw}).slice(0,3);
+}
+function tags(m){var t=[];if(m.et)t.push('Prorrogação');if(m.pens)t.push('Pênaltis');if(m.gold)t.push('Gol de ouro');return t}
+function tagHTML(m){return tags(m).map(function(t){return '<span class="tag">'+t+'</span>'}).join('')}
+
+/* ---------- Painel ---------- */
+function renderDash(){
+  var ms=weekMatches(curKey), T=compute(ms), isClosed=!!S.closed[curKey];
+  $('range').textContent='Semana de '+brFull(curKey)+' a '+brFull(addDays(curKey,4))+(isClosed?' · encerrada':'');
+  $('banner').innerHTML=(!isClosed&&dow(today)===5)?'<div class="banner">Hoje é sexta-feira: confira o relatório e encerre a semana.</div>':'';
+  var gols=ms.reduce(function(s,m){return s+m.g1+m.g2},0), lead=T[0];
+  $('stats').innerHTML=
+    stat(ms.length,'partidas')+
+    stat(lead?esc(lead.name):'—','líder ('+(lead?lead.pts+' pts':'sem jogos')+')')+
+    stat(gols,'gols marcados')+
+    stat(ms.filter(function(m){return m.pens}).length,'decididas nos pênaltis');
+  $('table').innerHTML=T.length?'<table><thead><tr><th>Jogador</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th><th>Pts</th><th>Aproveit.</th></tr></thead><tbody>'+
+    T.map(function(p,i){return '<tr class="'+(i===0?'lead':'')+'"><td>'+esc(p.name)+'</td><td>'+p.j+'</td><td>'+p.v+'</td><td>'+p.e+'</td><td>'+p.d+'</td><td>'+(p.sg>0?'+':'')+p.sg+'</td><td><b>'+p.pts+'</b></td><td><div style="display:flex;gap:8px;align-items:center;justify-content:center"><div class="bar"><i style="width:'+p.ap+'%"></i></div>'+p.ap+'%</div></td></tr>'}).join('')+'</tbody></table>'
+    :'<div class="empty">Nenhuma partida nesta semana. Registre a primeira ao lado.</div>';
+  $('days').innerHTML=DAYS.map(function(n,i){var k=addDays(curKey,i);var c=ms.filter(function(m){return m.date===k}).length;return '<div class="day'+(k===today?' today':'')+'"><b>'+c+'</b>'+n+' '+br(k)+'</div>'}).join('');
+  var sorted=ms.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.id-a.id});
+  $('list').innerHTML=sorted.length?sorted.map(function(m){
+    return '<div class="match"><span class="badge '+m.res+'">'+({V:'V',E:'E',D:'D'}[m.res])+'</span>'+
+      '<div class="m-info"><b>'+esc(m.p1)+'</b> × <b>'+esc(m.p2)+'</b><br><small>'+DAYS[dow(m.date)-1]+' '+br(m.date)+'</small> '+tagHTML(m)+'</div>'+
+      '<span class="m-score">'+m.g1+' × '+m.g2+'</span>'+
+      '<button class="x" aria-label="Excluir partida" onclick="del('+m.id+')">✕</button></div>'}).join(''):'<div class="empty">Sem partidas ainda.</div>';
+  $('closeBtn').disabled=isClosed||!ms.length;$('closeBtn').style.opacity=($('closeBtn').disabled?.5:1);
+  $('closeBtn').textContent=isClosed?'Semana encerrada':'Encerrar semana';
+  var dl=[];S.matches.forEach(function(m){[m.p1,m.p2].forEach(function(n){if(dl.indexOf(n)<0)dl.push(n)})});
+  $('names').innerHTML=dl.map(function(n){return '<option value="'+esc(n)+'">'}).join('');
+}
+function stat(n,l){return '<div class="stat"><div class="num">'+n+'</div><small>'+l+'</small></div>'}
+
+/* ---------- Relatório ---------- */
+function reportHTML(k){
+  var ms=weekMatches(k), T=compute(ms);
+  if(!ms.length)return '<div class="empty">Sem partidas nesta semana.</div>';
+  var c=T[0], bg=bestGames(ms);
+  var tie=T.length>1&&T[1].pts===c.pts&&T[1].ap===c.ap&&T[1].sg===c.sg&&T[1].gp===c.gp;
+  var html='<div class="champ"><div class="tr">🏆</div><small>Grande campeão da semana</small><h3>'+esc(c.name)+'</h3><p>'+c.pts+' pts · '+c.v+'V '+c.e+'E '+c.d+'D · saldo '+(c.sg>0?'+':'')+c.sg+' · '+c.ap+'% de aproveitamento</p>'+(tie?'<p><small>Empate total nos critérios com '+esc(T[1].name)+'.</small></p>':'')+'</div>';
+  html+='<h3 class="s">Melhores jogos da semana</h3>';
+  html+=bg.length?'<div class="best">'+bg.map(function(g,i){return '<div><span>'+(i===0?'⭐ ':'')+'<b>'+esc(g.w)+'</b> venceu '+esc(g.l)+' · '+DAYS[dow(g.m.date)-1]+' '+br(g.m.date)+' '+tagHTML(g.m)+'</span><b>'+g.gw+' × '+g.gl+'</b></div>'}).join('')+'</div>':'<div class="empty">Nenhuma vitória na semana (só empates).</div>';
+  var extra=[ms.length+' partidas',ms.reduce(function(s,m){return s+m.g1+m.g2},0)+' gols',ms.filter(function(m){return m.pens}).length+' nos pênaltis',ms.filter(function(m){return m.et}).length+' com prorrogação',ms.filter(function(m){return m.gold}).length+' com gol de ouro'];
+  html+='<p class="sub">'+extra.join(' · ')+'</p>';
+  html+='<div class="tbl"><table><thead><tr><th>Jogador</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>Pts</th><th>%</th></tr></thead><tbody>'+
+    T.map(function(p){return '<tr><td>'+esc(p.name)+'</td><td>'+p.j+'</td><td>'+p.v+'</td><td>'+p.e+'</td><td>'+p.d+'</td><td>'+p.gp+'</td><td>'+p.gc+'</td><td>'+(p.sg>0?'+':'')+p.sg+'</td><td><b>'+p.pts+'</b></td><td>'+p.ap+'%</td></tr>'}).join('')+'</tbody></table></div>';
+  html+='<h3 class="s">Partidas da semana</h3>'+ms.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.id-a.id}).map(function(m){
+    return '<div class="match"><span class="badge '+m.res+'">'+m.res+'</span><div class="m-info"><b>'+esc(m.p1)+'</b> × <b>'+esc(m.p2)+'</b><br><small>'+DAYS[dow(m.date)-1]+' '+br(m.date)+'</small> '+tagHTML(m)+'</div><span class="m-score">'+m.g1+' × '+m.g2+'</span><button class="x" aria-label="Excluir partida" onclick="del('+m.id+')">✕</button></div>'}).join('');
+  return html;
+}
+var repKey=null;
+function showReport(k,quiet){
+  repKey=k;
+  var el=$('report');
+  el.style.display='block';
+  el.innerHTML='<h2>Relatório · '+br(k)+' a '+brFull(addDays(k,4))+'</h2>'+reportHTML(k);
+  if(!quiet)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function askConfirm(msg,label,cb){
+  var ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML='<div class="dlg" role="dialog" aria-modal="true"><p>'+esc(msg)+'</p><div class="bt"><button class="btn alt" type="button" data-a="n">Cancelar</button><button class="btn red" type="button" data-a="y">'+esc(label)+'</button></div></div>';
+  ov.addEventListener('click',function(e){
+    var a=e.target.getAttribute&&e.target.getAttribute('data-a');
+    if(a==='y'||a==='n'||e.target===ov){document.body.removeChild(ov);if(a==='y')cb()}
+  });
+  document.body.appendChild(ov);
+  ov.querySelector('[data-a="n"]').focus();
+}
+function closeWeek(){
+  if(!weekMatches(curKey).length)return;
+  askConfirm('Encerrar a semana? Depois disso não será possível adicionar partidas nela.','Encerrar',function(){
+    S.closed[curKey]={at:new Date().toISOString()};save();renderDash();showReport(curKey);
+  });
+}
+
+/* ---------- Histórico ---------- */
+function renderHist(){
+  var open={};Array.prototype.forEach.call(document.querySelectorAll('#histList details[open]'),function(d){open[d.dataset.k]=1});
+  var keys={};S.matches.forEach(function(m){keys[mondayOf(m.date)]=1});
+  var list=Object.keys(keys).filter(function(k){return k!==curKey||S.closed[k]}).sort().reverse();
+  $('histList').innerHTML=list.length?list.map(function(k){
+    var T=compute(weekMatches(k)),c=T[0];
+    return '<details class="week"'+(open[k]?' open':'')+' data-k="'+k+'"><summary><span>'+br(k)+' a '+brFull(addDays(k,4))+'</span><span>🏆 '+esc(c.name)+' <span class="pill'+(S.closed[k]?'':' open')+'">'+(S.closed[k]?'encerrada':'não encerrada')+'</span></span></summary><div class="in">'+reportHTML(k)+'</div></details>'}).join('')
+    :'<div class="card empty">Ainda não há semanas anteriores. Elas aparecem aqui quando a semana virar ou você encerrá-la.</div>';
+}
+
+/* ---------- Ações ---------- */
+function tab(t){
+  $('dash').hidden=t!=='dash';$('hist').hidden=t!=='hist';
+  $('t-dash').className=t==='dash'?'on':'';$('t-hist').className=t==='hist'?'on':'';
+  if(t==='hist')renderHist();
+}
+function del(id){
+  var m=S.matches.filter(function(x){return x.id===id})[0];
+  if(!m)return;
+  var wk=mondayOf(m.date);
+  askConfirm('Excluir esta partida do histórico? '+(S.closed[wk]?'Os resultados da semana serão recalculados. ':'')+'Não dá para desfazer.','Excluir',function(){
+    S.matches=S.matches.filter(function(x){return x.id!==id});
+    if(!weekMatches(wk).length)delete S.closed[wk];
+    save();renderDash();
+    if(!$('hist').hidden)renderHist();
+    if(repKey&&$('report').style.display==='block')showReport(repKey,true);
+  });
+}
+function syncRes(){
+  var a=+$('g1').value,b=+$('g2').value;
+  if(a>b)$('res').value='V';else if(a<b)$('res').value='D';
+  else if(!$('pens').checked&&!$('gold').checked)$('res').value='E';
+}
+['g1','g2','pens','gold'].forEach(function(id){$(id).addEventListener('input',syncRes);$(id).addEventListener('change',syncRes)});
+$('pens').addEventListener('change',function(){if(this.checked)$('et').checked=true});
+$('form').addEventListener('submit',function(e){
+  e.preventDefault();
+  var p1=$('p1').value.trim(),p2=$('p2').value.trim(),g1=parseInt($('g1').value,10),g2=parseInt($('g2').value,10),res=$('res').value,date=$('date').value,pens=$('pens').checked,gold=$('gold').checked;
+  function fail(t){$('err').textContent=t}
+  if(!p1||!p2)return fail('Informe os dois jogadores.');
+  if(p1.toLowerCase()===p2.toLowerCase())return fail('Os jogadores precisam ser diferentes.');
+  if(isNaN(g1)||isNaN(g2)||g1<0||g2<0)return fail('Informe um placar válido.');
+  if(!date)return fail('Escolha a data da partida.');
+  if(!isWeekday(date))return fail('Só entram partidas de segunda a sexta. Escolha um dia útil.');
+  if(S.closed[mondayOf(date)])return fail('A semana desta data já foi encerrada.');
+  if(g1>g2&&res!=='V')return fail('O placar dá vitória ao Jogador 1. Ajuste o resultado.');
+  if(g1<g2&&res!=='D')return fail('O placar dá derrota ao Jogador 1. Ajuste o resultado.');
+  if(g1===g2&&res!=='E'&&!pens&&!gold)return fail('Placar empatado com vencedor exige pênaltis ou gol de ouro.');
+  if(g1===g2&&res==='E'&&(pens||gold))return fail('Com pênaltis ou gol de ouro houve vencedor. Escolha Vitória ou Derrota.');
+  S.matches.push({id:Date.now(),p1:p1,p2:p2,g1:g1,g2:g2,res:res,pens:pens,et:$('et').checked||pens,gold:gold,date:date});
+  save();fail('');
+  $('g1').value=0;$('g2').value=0;$('res').value='E';$('pens').checked=$('et').checked=$('gold').checked=false;
+  $('date').value=date;
+  renderDash();
+});
+$('date').value=defDate;$('res').value='E';
+renderDash();
+</script>
+</body>
+</html>
